@@ -1,7 +1,7 @@
 
-const axios = require("axios");
+import axios from "axios";
 
-const LINE_ACCESS_TOKEN = "YOUR_LINE_CHANNEL_ACCESS_TOKEN"; // LINEのチャネルアクセストークン
+const LINE_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN; // 環境変数を利用
 
 export default async function handler(req, res) {
     if (req.method !== "POST") {
@@ -16,23 +16,20 @@ export default async function handler(req, res) {
             return res.status(200).send("No events received.");
         }
 
-        // すべてのイベントを処理
         for (const event of events) {
             if (event.type === "message" && event.message.type === "text") {
                 const userMessage = event.message.text;
                 const replyToken = event.replyToken;
 
-                // 占い or 相談を判定
                 let replyText = "";
                 if (userMessage.includes("占い")) {
-                    replyText = "🔮 今日の占いをお伝えします！（このあとChatGPT APIと連携）";
+                    replyText = "🔮 今日の占いをお伝えします！（ChatGPT APIと連携予定）";
                 } else if (userMessage.includes("相談")) {
-                    replyText = "💬 相談内容を教えてください！（このあとChatGPT APIと連携）";
+                    replyText = "💬 相談内容を教えてください！（ChatGPT APIと連携予定）";
                 } else {
                     replyText = `「${userMessage}」ですね？ もう少し詳しく教えてください！`;
                 }
 
-                // LINEに返信
                 await replyToLine(replyToken, replyText);
             }
         }
@@ -40,11 +37,11 @@ export default async function handler(req, res) {
         res.status(200).send("Success");
     } catch (error) {
         console.error("❌ エラー:", error);
-        res.status(500).send("Error processing webhook");
+        res.status(500).json({ message: "Internal Server Error", error: error.toString() });
     }
 }
 
-// LINEにメッセージを送信する関数
+// LINEに返信する関数
 async function replyToLine(replyToken, text) {
     await axios.post("https://api.line.me/v2/bot/message/reply", {
         replyToken: replyToken,
@@ -56,3 +53,4 @@ async function replyToLine(replyToken, text) {
         }
     });
 }
+
