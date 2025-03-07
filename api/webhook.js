@@ -1,13 +1,13 @@
-const express = require("express");
-const axios = require("axios");
 
-const app = express();
-app.use(express.json());
+const axios = require("axios");
 
 const LINE_ACCESS_TOKEN = "YOUR_LINE_CHANNEL_ACCESS_TOKEN"; // LINEのチャネルアクセストークン
 
-// LINE Webhookエンドポイント
-app.post("/api/webhook", async (req, res) => {
+export default async function handler(req, res) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ message: "Method Not Allowed" });
+    }
+
     try {
         console.log("📩 受信メッセージ:", JSON.stringify(req.body, null, 2));
 
@@ -42,7 +42,7 @@ app.post("/api/webhook", async (req, res) => {
         console.error("❌ エラー:", error);
         res.status(500).send("Error processing webhook");
     }
-});
+}
 
 // LINEにメッセージを送信する関数
 async function replyToLine(replyToken, text) {
@@ -56,5 +56,3 @@ async function replyToLine(replyToken, text) {
         }
     });
 }
-
-module.exports = app;
